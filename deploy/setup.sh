@@ -46,6 +46,7 @@ apt install -y nginx certbot python3-certbot-nginx
 echo "━━━ 7/11  Instalando Evolution API ━━━"
 apt install -y git
 
+rm -rf "$EVOLUTION_DIR"
 git clone https://github.com/EvolutionAPI/evolution-api.git "$EVOLUTION_DIR"
 cd "$EVOLUTION_DIR"
 npm install
