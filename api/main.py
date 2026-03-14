@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
-DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:jabbajabbajoejoe@45.55.73.173:5432/chatbot")
+DB_DSN = os.getenv("DB_DSN", "postgresql://postgres:jabbajabbajoejoe@localhost:5432/chatbot")
 SESSION_TIMEOUT = timedelta(hours=1)
 
 EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "https://evolutionapi.indikolab.com")
