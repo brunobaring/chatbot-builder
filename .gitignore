@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+api/.venv/
+
+# Segredos — NUNCA commitar
+.env
+.env.local
+.env.production
+.env.development
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Misc
+.DS_Store
+*.log
