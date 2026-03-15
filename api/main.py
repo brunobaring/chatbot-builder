@@ -379,8 +379,15 @@ async def whatsapp_connect(body: WhatsAppConnectIn):
 
     try:
         qr_resp = await evolution_request("GET", f"/instance/connect/{instance_name}")
-        qr_code = qr_resp.get("base64") or qr_resp.get("qrcode", {}).get("base64")
-    except httpx.HTTPError:
+        print(f"[QR DEBUG] response: {qr_resp}")
+        qr_code = (
+            qr_resp.get("base64")
+            or qr_resp.get("qrcode", {}).get("base64")
+            or qr_resp.get("code")
+            or qr_resp.get("qr")
+        )
+    except httpx.HTTPError as e:
+        print(f"[QR DEBUG] error: {e}")
         qr_code = None
 
     return WhatsAppConnectOut(instance_name=instance_name, qr_code=qr_code, status="connecting")
