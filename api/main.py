@@ -354,9 +354,16 @@ async def whatsapp_connect(body: WhatsAppConnectIn):
             await evolution_request("POST", "/instance/create", {
                 "instanceName": instance_name,
                 "qrcode": True,
-                "webhook": f"{WEBHOOK_BASE_URL}/api/whatsapp/webhook",
-                "webhookByEvents": False,
-                "events": ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
+                "integration": "WHATSAPP-BAILEYS",
+            })
+            await evolution_request("POST", f"/webhook/set/{instance_name}", {
+                "webhook": {
+                    "enabled": True,
+                    "url": f"{WEBHOOK_BASE_URL}/api/whatsapp/webhook",
+                    "webhookByEvents": False,
+                    "webhookBase64": True,
+                    "events": ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
+                }
             })
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=f"Erro ao criar instância: {e}")
