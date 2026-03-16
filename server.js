@@ -29,6 +29,7 @@ async function proxyToFastAPI(req, res) {
 app.post("/api/config", proxyToFastAPI);
 app.post("/api/messages", proxyToFastAPI);
 app.post("/api/whatsapp/connect", proxyToFastAPI);
+app.post("/api/whatsapp/webhook", proxyToFastAPI);
 app.get("/api/whatsapp/qr/:instance", (req, res) => {
   proxyToFastAPI({ ...req, path: `/api/whatsapp/qr/${req.params.instance}` }, res);
 });
