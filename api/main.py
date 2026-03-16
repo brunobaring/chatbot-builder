@@ -404,6 +404,25 @@ async def whatsapp_status(instance_name: str):
         )
     if not row:
         raise HTTPException(status_code=404, detail="Instância não encontrada.")
+
+    # If not connected yet, ask Evolution API directly (webhook may not have arrived)
+    if row["status"] != "connected":
+        try:
+            state_resp = await evolution_request("GET", f"/instance/connectionState/{instance_name}")
+            ev_state = (
+                state_resp.get("instance", {}).get("state")
+                or state_resp.get("state", "")
+            )
+            if ev_state == "open":
+                async with pool.acquire() as conn2:
+                    await conn2.execute(
+                        "UPDATE whatsapp_instances SET status = 'connected' WHERE instance_name = $1",
+                        instance_name,
+                    )
+                return WhatsAppStatusOut(instance_name=instance_name, status="connected")
+        except Exception:
+            pass
+
     return WhatsAppStatusOut(instance_name=instance_name, status=row["status"])
 
 
