@@ -377,20 +377,23 @@ async def whatsapp_connect(body: WhatsAppConnectIn):
     if existing and existing["status"] == "connected":
         return WhatsAppConnectOut(instance_name=instance_name, status="connected")
 
+    # Retorna imediatamente — frontend busca o QR via polling em /api/whatsapp/qr/
+    return WhatsAppConnectOut(instance_name=instance_name, qr_code=None, status="connecting")
+
+
+@app.get("/api/whatsapp/qr/{instance_name}")
+async def whatsapp_qr(instance_name: str):
     try:
         qr_resp = await evolution_request("GET", f"/instance/connect/{instance_name}")
-        print(f"[QR DEBUG] response: {qr_resp}")
         qr_code = (
             qr_resp.get("base64")
             or qr_resp.get("qrcode", {}).get("base64")
             or qr_resp.get("code")
             or qr_resp.get("qr")
         )
-    except httpx.HTTPError as e:
-        print(f"[QR DEBUG] error: {e}")
-        qr_code = None
-
-    return WhatsAppConnectOut(instance_name=instance_name, qr_code=qr_code, status="connecting")
+        return {"qr_code": qr_code}
+    except httpx.HTTPError:
+        return {"qr_code": None}
 
 
 @app.get("/api/whatsapp/status/{instance_name}", response_model=WhatsAppStatusOut)

@@ -861,14 +861,8 @@
           return;
         }
 
-        if (data.qr_code) {
-          document.getElementById("modalBody").innerHTML =
-            `<div class="qr-wrapper"><img src="${data.qr_code}" alt="QR Code" /></div>`;
-          document.getElementById("modalStatus").textContent = "Escaneie o QR code com seu WhatsApp";
-        } else {
-          document.getElementById("modalBody").innerHTML = '<div class="modal-spinner"></div>';
-          document.getElementById("modalStatus").textContent = "Aguardando QR code...";
-        }
+        document.getElementById("modalBody").innerHTML = '<div class="modal-spinner"></div>';
+        document.getElementById("modalStatus").textContent = "Aguardando QR code...";
 
         startWhatsAppPolling();
       } catch (err) {
@@ -882,12 +876,26 @@
       whatsappPollInterval = setInterval(async () => {
         if (!whatsappInstanceName) return;
         try {
-          const res = await fetch(`/api/whatsapp/status/${whatsappInstanceName}`);
-          const data = await res.json();
-          if (data.status === "connected") {
+          // Verifica status de conexão
+          const statusRes = await fetch(`/api/whatsapp/status/${whatsappInstanceName}`);
+          const statusData = await statusRes.json();
+          if (statusData.status === "connected") {
             clearInterval(whatsappPollInterval);
             whatsappPollInterval = null;
             showWhatsAppConnected();
+            return;
+          }
+
+          // Busca QR code se ainda não apareceu
+          const modalImg = document.querySelector("#modalBody img");
+          if (!modalImg) {
+            const qrRes = await fetch(`/api/whatsapp/qr/${whatsappInstanceName}`);
+            const qrData = await qrRes.json();
+            if (qrData.qr_code) {
+              document.getElementById("modalBody").innerHTML =
+                `<div class="qr-wrapper"><img src="${qrData.qr_code}" alt="QR Code" /></div>`;
+              document.getElementById("modalStatus").textContent = "Escaneie o QR code com seu WhatsApp";
+            }
           }
         } catch (_) {}
       }, 3000);
