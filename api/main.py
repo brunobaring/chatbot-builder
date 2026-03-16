@@ -356,15 +356,6 @@ async def whatsapp_connect(body: WhatsAppConnectIn):
                 "qrcode": True,
                 "integration": "WHATSAPP-BAILEYS",
             })
-            await evolution_request("POST", f"/webhook/set/{instance_name}", {
-                "webhook": {
-                    "enabled": True,
-                    "url": f"{WEBHOOK_BASE_URL}/api/whatsapp/webhook",
-                    "webhookByEvents": False,
-                    "webhookBase64": True,
-                    "events": ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
-                }
-            })
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=f"Erro ao criar instância: {e}")
 
@@ -373,6 +364,20 @@ async def whatsapp_connect(body: WhatsAppConnectIn):
                 "INSERT INTO whatsapp_instances (config_id, instance_name, status) VALUES ($1, $2, 'connecting')",
                 body.config_id, instance_name,
             )
+
+    # Always (re)configure the webhook — ensures it's set even on reconnect
+    try:
+        await evolution_request("POST", f"/webhook/set/{instance_name}", {
+            "webhook": {
+                "enabled": True,
+                "url": f"{WEBHOOK_BASE_URL}/api/whatsapp/webhook",
+                "webhookByEvents": False,
+                "webhookBase64": True,
+                "events": ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
+            }
+        })
+    except httpx.HTTPError:
+        pass  # Don't block if webhook update fails for an existing instance
 
     if existing and existing["status"] == "connected":
         return WhatsAppConnectOut(instance_name=instance_name, status="connected")
