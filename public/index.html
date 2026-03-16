@@ -886,28 +886,38 @@
             return;
           }
 
-          // Busca QR code se ainda não apareceu
-          const modalImg = document.querySelector("#modalBody img");
-          if (!modalImg) {
-            const qrRes = await fetch(`/api/whatsapp/qr/${whatsappInstanceName}`);
-            const qrData = await qrRes.json();
-            if (qrData.qr_code) {
-              document.getElementById("modalBody").innerHTML =
-                `<div class="qr-wrapper"><img src="${qrData.qr_code}" alt="QR Code" /></div>`;
-              document.getElementById("modalStatus").textContent = "Escaneie o QR code com seu WhatsApp";
-            }
+          // Atualiza QR code a cada ciclo (QR expira em ~20s)
+          const qrRes = await fetch(`/api/whatsapp/qr/${whatsappInstanceName}`);
+          const qrData = await qrRes.json();
+          if (qrData.qr_code) {
+            document.getElementById("modalBody").innerHTML =
+              `<div class="qr-wrapper"><img src="${qrData.qr_code}" alt="QR Code" /></div>`;
+            document.getElementById("modalStatus").textContent = "Escaneie o QR code com seu WhatsApp";
           }
         } catch (_) {}
       }, 3000);
     }
 
-    function showWhatsAppConnected() {
+    async function showWhatsAppConnected() {
       document.getElementById("modalBody").innerHTML = '<div style="font-size:3rem">✅</div>';
-      document.getElementById("modalSub").textContent = "WhatsApp conectado! Mensagens recebidas neste número serão respondidas automaticamente pelo chatbot.";
       document.getElementById("modalStatus").textContent = "Conectado com sucesso!";
       document.getElementById("modalStatus").className = "modal-status success";
       document.getElementById("whatsappBtn").classList.add("connected");
       document.getElementById("whatsappBtn").title = "WhatsApp conectado";
+
+      // Busca o número conectado para exibir ao usuário
+      let phoneInfo = "";
+      try {
+        const res = await fetch(`/api/whatsapp/phone/${whatsappInstanceName}`);
+        const data = await res.json();
+        if (data.phone) {
+          phoneInfo = `<br><strong>Número conectado: +${data.phone}</strong><br>`;
+        }
+      } catch (_) {}
+
+      document.getElementById("modalSub").innerHTML =
+        `✅ WhatsApp conectado com sucesso!${phoneInfo}<br>` +
+        `Agora envie uma mensagem para esse número no WhatsApp e o chatbot responderá automaticamente.`;
     }
   </script>
 </body>

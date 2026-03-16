@@ -37,6 +37,9 @@ app.get("/api/whatsapp/qr/:instance", (req, res) => {
 app.get("/api/whatsapp/status/:instance", (req, res) => {
   proxyToFastAPI({ ...req, path: `/api/whatsapp/status/${req.params.instance}` }, res);
 });
+app.get("/api/whatsapp/phone/:instance", (req, res) => {
+  proxyToFastAPI({ ...req, path: `/api/whatsapp/phone/${req.params.instance}` }, res);
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

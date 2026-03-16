@@ -407,6 +407,28 @@ async def whatsapp_status(instance_name: str):
     return WhatsAppStatusOut(instance_name=instance_name, status=row["status"])
 
 
+@app.get("/api/whatsapp/phone/{instance_name}")
+async def whatsapp_phone(instance_name: str):
+    """Returns the phone number connected to the instance, if available."""
+    try:
+        data = await evolution_request("GET", f"/instance/fetchInstances?instanceName={instance_name}")
+        # Response may be a list or a single object
+        instances = data if isinstance(data, list) else [data]
+        for inst in instances:
+            # Evolution API nests instance info differently across versions
+            owner = (
+                inst.get("instance", {}).get("ownerJid")
+                or inst.get("ownerJid")
+                or inst.get("owner")
+            )
+            if owner:
+                phone = owner.split("@")[0]
+                return {"phone": phone}
+    except Exception:
+        pass
+    return {"phone": None}
+
+
 @app.post("/api/whatsapp/webhook")
 async def whatsapp_webhook(payload: dict):
     event = payload.get("event", "")
