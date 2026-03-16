@@ -13,10 +13,11 @@ const FASTAPI_URL = process.env.FASTAPI_URL || "http://localhost:8000";
 
 async function proxyToFastAPI(req, res) {
   try {
+    const isGet = req.method === "GET";
     const response = await fetch(`${FASTAPI_URL}${req.path}`, {
       method: req.method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
+      ...(isGet ? {} : { body: JSON.stringify(req.body) }),
     });
     const data = await response.json();
     res.status(response.status).json(data);
